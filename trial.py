@@ -1,5 +1,4 @@
-import psycopg2
-from db import dbd
+from db import dbd, test
 
 
 def data_model(data):
@@ -10,8 +9,7 @@ def data_model(data):
         conn.autocommit = True
         cur = conn.cursor()
 
-        cur.execute('SELECT %s as connected;', ('connection to post was success',))
-        print(cur.fetchone())
+        test()
         if cur.execute('DROP TABLE IF EXISTS Brewery'):
             print("Table already exists")
         else:
@@ -37,7 +35,7 @@ def data_model(data):
                     ratings DECIMAL, 
                     number_of_ratings VARCHAR(128))"""
             )
-            # converting list of dict to list of turple
+            # converting list of dict to list of tuple
 
             data_tuples = [tuple(datum.values()) for datum in data]
             values_template = ','.join(['%s'] * len(data_tuples))

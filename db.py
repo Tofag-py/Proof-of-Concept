@@ -11,3 +11,18 @@ def dbd():
     conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=DB_PORT,
                             sslmode='require')
     return conn
+
+
+connection = dbd()
+
+
+def test():
+    cur = connection.cursor()
+    cur.execute('SELECT %s as connected;', ('connection to post was success',))
+    print(cur.fetchone())
+
+    cur.close()
+    connection.close()
+
+
+test()

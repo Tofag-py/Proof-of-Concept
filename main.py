@@ -26,7 +26,7 @@ def get_all_data():
             break
         all_data_entries.extend(r['data'])
         page = page + 1
-        
+
     data = all_data_entries
     return data
 
