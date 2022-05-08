@@ -1,0 +1,63 @@
+Resources:
+  BrewerySG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: For the app node that allows ssh, HTTP, and docker ports
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: "8080"
+          ToPort: "8080"
+          CidrIp: 0.0.0.0/0
+  BreweryApp:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      Tags:
+        - Key: Name
+          Value: Customer-App
+      ImageId: ami-0022f774911c1d690 # ImageId depends on a region. The current image is valid ONLY in US-EAST-1
+      KeyName: ECSKey # Your pem key name
+      SecurityGroups:
+        - !Ref BrewerySG
+      UserData: !Base64 |
+        #!/bin/bash
+        # Install Docker
+        sudo yum update -y
+        sudo yum install docker -y
+        sudo service docker start
+        sudo usermod -a -G docker ec2-user
+        # Install docker-compose
+        sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        # Create docker-composse file
+        echo "
+        version: '3.8'
+        services:
+          db:
+            container_name: postgresql_db
+            image: postgres:14.1-alpine
+            restart: always
+            ports:
+              - "5432:5432"
+            environment:
+              - POSTGRES_USER: cdxpreinbalvbw
+              - POSTGRES_PASSWORD: 8b794319be9f1d93f7067a2544843ef4a466b4f9e1c0461f13185d43be2f9550
+            networks:
+              - customer-ec2-network
+          BreweryApp:
+            container_name: brewery
+            image: 871867462990.dkr.ecr.us-east-1.amazonaws.com/brewery:latest
+            restart: on-failure
+            ports:
+              - "8080:8080"
+            networks:
+              - customer-ec2-network
+        networks:
+          customer-ec2-network:
+        " > docker-compose.yaml
+        # Run docker-composse
+        sudo /usr/local/bin/docker-compose up -d
