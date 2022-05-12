@@ -18,9 +18,9 @@ Resources:
       InstanceType: t2.micro
       Tags:
         - Key: Name
-          Value: Customer-App
-      ImageId: ami-0022f774911c1d690 # ImageId depends on a region. The current image is valid ONLY in US-EAST-1
-      KeyName: ECSKey # Your pem key name
+          Value: BreweryApp
+      ImageId: ami-0022f774911c1d690
+      KeyName: ECSKey
       SecurityGroups:
         - !Ref BrewerySG
       UserData: !Base64 |

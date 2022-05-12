@@ -1,0 +1,42 @@
+Resources:
+  BrewerySG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: For the app node that allows ssh, HTTP, and docker ports
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: "8080"
+          ToPort: "8080"
+          CidrIp: 0.0.0.0/0
+  BreweryApp:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      Tags:
+        - Key: Name
+          Value: BreweryApp
+      ImageId: ami-0022f774911c1d690 # ImageId depends on a region. The current image is valid ONLY in US-EAST-1
+      KeyName: ECSKey # Your pem key name
+      SecurityGroups:
+        - !Ref BrewerySG
+      UserData: !Base64 |
+        #!/bin/bash
+        # Install python
+        sudo yum update -y
+        sudo yum -y install python3.7
+        sudo yum -y install wget
+        cd /home/ec2-user
+        sudo chmod +x ./install
+        sudo ./install auto
+        sudo wget https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+        sudo yum install -y postgresql14-server
+        sudo /usr/pgsql-14/bin/postgresql-14-setup initdb
+        sudo systemctl enable postgresql-14
+        sudo systemctl start postgresql-14
+        sudo yum install -y python-pip3
+        sudo pip3 install psycopg2-binary==2.9.3
+        sudo pip3 install requests

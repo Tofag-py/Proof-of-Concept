@@ -23,6 +23,7 @@ def get_all_data():
         except IndexError:
             # We found an error
             print("Extraction Completed, No more data.....")
+            
             break
         all_data_entries.extend(r['data'])
         page = page + 1
